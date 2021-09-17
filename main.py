@@ -36,7 +36,6 @@ class Keyboards():
 
 	async def mainmenu_board():
 		keyboard = types.InlineKeyboardMarkup(row_width=1, resize_keyboard=True)
-		# freenumber_btn = types.InlineKeyboardButton(text="Бесплатные разборы", callback_data=f'freenumber_menu')
 		paidnumber_btn = types.InlineKeyboardButton(text="Платные разборы", callback_data=f'paidnumber_menu')
 		faq_btn = types.InlineKeyboardButton(text="FAQ", callback_data=f'faq_text')
 		keyboard.add(paidnumber_btn, faq_btn)
@@ -121,11 +120,7 @@ async def process_callback_button1(callback_query: types.CallbackQuery, state: F
 		elif callback_query.data == "back":
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
 			await callback_query.message.answer(cp.get_value("welcome_text", filep=cp.get_value("L_CODE")), reply_markup=await Keyboards.mainmenu_board())
-
-		elif callback_query.data == "freenumber_menu":
-			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
-			await callback_query.message.answer("Бесплатные разборы", reply_markup=await Keyboards.free_board())
-
+			
 		elif callback_query.data == "paidnumber_menu":
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
 			await callback_query.message.answer("Платные разборы", reply_markup=await Keyboards.paid_board())
