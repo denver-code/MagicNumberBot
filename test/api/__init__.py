@@ -1,1 +1,0 @@
-from api.dialog_calendar import calendar_callback as dialog_cal_callback, DialogCalendar

@@ -12,7 +12,7 @@ from aiogram.dispatcher import FSMContext
 from api import dialog_cal_callback, DialogCalendar
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import api.config_api as cp
-import api.dp_api as db
+import api.dp_api as db 
 
 API_TOKEN = cp.get_value("TOKEN")
 
@@ -29,38 +29,31 @@ class Keyboards():
 
 	async def ygender():
 		keyboard = types.InlineKeyboardMarkup(row_width=1, resize_keyboard=True)
-		man_btn = types.InlineKeyboardButton(text="Мужчина", callback_data=f'gender_man')
-		woman_btn = types.InlineKeyboardButton(text="Женщина", callback_data=f'gender_woman')
+		man_btn = types.InlineKeyboardButton(text=cp.get_value("man", filep=cp.get_value("L_CODE")), callback_data=f'gender_man')
+		woman_btn = types.InlineKeyboardButton(text=cp.get_value("woman", filep=cp.get_value("L_CODE")), callback_data=f'gender_woman')
 		keyboard.add(man_btn, woman_btn)
 		return keyboard	
 
 	async def mainmenu_board():
 		keyboard = types.InlineKeyboardMarkup(row_width=1, resize_keyboard=True)
-		paidnumber_btn = types.InlineKeyboardButton(text="Платные разборы", callback_data=f'paidnumber_menu')
-		faq_btn = types.InlineKeyboardButton(text="FAQ", callback_data=f'faq_text')
+		paidnumber_btn = types.InlineKeyboardButton(text=cp.get_value("paid_rec", filep=cp.get_value("L_CODE")), callback_data=f'paidnumber_menu')
+		faq_btn = types.InlineKeyboardButton(text=cp.get_value("faq", filep=cp.get_value("L_CODE")), callback_data=f'faq_text')
 		keyboard.add(paidnumber_btn, faq_btn)
 		return keyboard
 
 	async def secmenu_board():
 		keyboard = types.InlineKeyboardMarkup(row_width=1, resize_keyboard=True)
-		back_btn = types.InlineKeyboardButton(text="Назад", callback_data=f'back')
+		back_btn = types.InlineKeyboardButton(text=cp.get_value("back", filep=cp.get_value("L_CODE")), callback_data=f'back')
 		keyboard.add(back_btn)
 		return keyboard	
 	
 	async def paid_board():
 		keyboard = types.InlineKeyboardMarkup(row_width=1, resize_keyboard=True)
-		bday_energy = types.InlineKeyboardButton(text="Энергия дня рождения", callback_data=f'paid_bday')
-		year_task = types.InlineKeyboardButton(text="Ваши задачи года", callback_data=f'paid_yeartask')
-		your_task = types.InlineKeyboardButton(text="Ваша миссия", callback_data=f'paid_yourtask')
-		back_btn = types.InlineKeyboardButton(text="Назад", callback_data=f'back')
+		bday_energy = types.InlineKeyboardButton(text=cp.get_value("bday_en", filep=cp.get_value("L_CODE")), callback_data=f'paid_bday')
+		year_task = types.InlineKeyboardButton(text=cp.get_value("year_task", filep=cp.get_value("L_CODE")), callback_data=f'paid_yeartask')
+		your_task = types.InlineKeyboardButton(text=cp.get_value("your_mission", filep=cp.get_value("L_CODE")), callback_data=f'paid_yourtask')
+		back_btn = types.InlineKeyboardButton(text=cp.get_value("back", filep=cp.get_value("L_CODE")), callback_data=f'back')
 		keyboard.add(year_task, your_task, bday_energy, back_btn)
-		return keyboard	
-	
-	async def free_board():
-		keyboard = types.InlineKeyboardMarkup(row_width=1, resize_keyboard=True)
-		bday_energy = types.InlineKeyboardButton(text="Энергия дня рождения", callback_data=f'free_bday')
-		back_btn = types.InlineKeyboardButton(text="Назад", callback_data=f'back')
-		keyboard.add(bday_energy, back_btn)
 		return keyboard	
 
 @dp.message_handler(commands=["start"])
@@ -81,7 +74,6 @@ async def name_event(message, state):
 		await GrabName.next()
 	await message.answer(f"Приятно познакомиться, {message.text}!")
 	await message.answer(f"Вы", reply_markup=await Keyboards.ygender())
-	# await message.answer(cp.get_value("welcome_text", filep=cp.get_value("L_CODE")), reply_markup=await Keyboards.mainmenu_board())
 
 @dp.callback_query_handler(dialog_cal_callback.filter(), state=[GrabName.bday])#
 async def process_dialog_calendar(callback_query: types.CallbackQuery, callback_data: dict, state: FSMContext):
@@ -115,7 +107,7 @@ async def process_callback_button1(callback_query: types.CallbackQuery, state: F
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
 			data["gender"] = callback_query.data.split("_")[1]
 			await GrabName.bday.set()
-			await callback_query.message.answer("Пожалуйста выберете дату рождения: ", reply_markup=await DialogCalendar().start_calendar())
+			await callback_query.message.answer(cp.get_value("pls_select_date", filep=cp.get_value("L_CODE")), reply_markup=await DialogCalendar().start_calendar())
 
 		elif callback_query.data == "back":
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
@@ -123,7 +115,7 @@ async def process_callback_button1(callback_query: types.CallbackQuery, state: F
 			
 		elif callback_query.data == "paidnumber_menu":
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
-			await callback_query.message.answer("Платные разборы", reply_markup=await Keyboards.paid_board())
+			await callback_query.message.answer(cp.get_value("paid_rec", filep=cp.get_value("L_CODE")), reply_markup=await Keyboards.paid_board())
 
 if __name__ == '__main__':
 	executor.start_polling(dp, skip_updates=True)

@@ -25,7 +25,7 @@ def set_value(name, value, filep="config", ctype="Default"):
     with codecs.open(f"{filep}.ini", "w", "utf8") as configfile:
         config.write(configfile)
 
-def get_key_list(filep):
+def get_key_list(filep="config"):
     config = configparser.ConfigParser()
     config.read_file(codecs.open(f"{filep}.ini", "r", "utf8"))
     k_list = []
@@ -36,7 +36,7 @@ def get_key_list(filep):
     return k_list
 
 
-def get_value_list(filep):
+def get_value_list(filep="config"):
     config = configparser.ConfigParser()
     config.read_file(codecs.open(f"{filep}.ini", "r", "utf8"))
     v_list = []
