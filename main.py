@@ -73,7 +73,7 @@ class Keyboards():
 		year_task = types.InlineKeyboardButton(text=cp.get_value("year_task", filep=cp.get_value("L_CODE")), callback_data=f'paid_yeartask')
 		your_task = types.InlineKeyboardButton(text=cp.get_value("your_mission", filep=cp.get_value("L_CODE")), callback_data=f'paid_yourtask')
 		back_btn = types.InlineKeyboardButton(text=cp.get_value("back", filep=cp.get_value("L_CODE")), callback_data=f'back')
-		keyboard.add(bday_energy, back_btn)#year_task, your_task, 
+		keyboard.add(bday_energy, key_energy, back_btn)#year_task, your_task, 
 		return keyboard	
 	
 	async def year_selection(name):
@@ -131,7 +131,7 @@ async def process_successful_payment(message: types.Message):
 		await bot.send_message(
 			message.chat.id,
 			cp.get_value(
-				"",
+				"select_day_type",
 				filep=cp.get_value("L_CODE")
 			),
 			reply_markup=await Keyboards.day_selection("key")
@@ -170,7 +170,7 @@ async def process_dialog_calendar(callback_query: types.CallbackQuery, callback_
 	selected, date = await DialogCalendar().process_selection(callback_query, callback_data)
 	if selected:
 		async with state.proxy() as data:
-			if "new_date" not in data:
+			if "feature" not in data:
 				data["b_date"] = date.strftime("%d/%m/%Y")
 				await db.insert_db("users", {
 					"telegram_id":callback_query.from_user.id,
@@ -186,9 +186,9 @@ async def process_dialog_calendar(callback_query: types.CallbackQuery, callback_
 				await state.finish()
 			else:
 				data["year"] = date.strftime("%d/%m/%Y")
-				del data["new_date"]
+				
 				if data["feature"] == "bday":
-
+					del data["new_date"]
 					allready_sum = await calcerYear(int(date.strftime("%Y")), int(date.strftime("%m")), int(date.strftime("%d")))
 
 					key_list = cp.get_key_list(filep="ru_RU")
@@ -206,8 +206,26 @@ async def process_dialog_calendar(callback_query: types.CallbackQuery, callback_
 					for i in key_values:
 						await callback_query.message.answer(cp.get_value(i, filep="ru_RU"))
 
-					await callback_query.message.answer(cp.get_value("welcome_text", filep=cp.get_value("L_CODE")), reply_markup=await Keyboards.mainmenu_board())
+				elif data["feature"] == "key":
+					user_key_day = int(date.strftime("%d"))
+					if user_key_day > 22:
+						user_key_day = user_key_day - 22
+				
+					key_list = cp.get_key_list(filep="ru_RU")
 
+					key_values = []
+					for i in key_list:
+						if f"code_{user_key_day}" in i[1]:
+							if "m" in i[1] or "w" in i[1]:
+								user_obj = await db.find_q("users", {"telegram_id":callback_query.from_user.id})
+								if user_obj["gender"][0] == i[1][-1]:
+									key_values.append(i[1])
+							else:
+								key_values.append(i[1])
+									
+					for i in key_values:
+						await callback_query.message.answer(cp.get_value(i, filep="ru_RU"))
+				await callback_query.message.answer(cp.get_value("welcome_text", filep=cp.get_value("L_CODE")), reply_markup=await Keyboards.mainmenu_board())
 
 async def calcerYear(user_bday_year, user_bday_mon, user_bday_day):
 	user_sum = await sumOfDigits(user_bday_year)
@@ -291,7 +309,35 @@ async def process_callback_button1(callback_query: types.CallbackQuery, state: F
 
 		elif callback_query.data[0:4] == "day_":
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
+			if callback_query.data.split("_")[1] == "old":
+				feature = callback_query.data.split("_")[-1]
+				user_obj = await db.find_q("users", {"telegram_id":callback_query.from_user.id})
+				user_key_day = int(user_obj["bday"].split("/")[0])
+				if user_key_day > 22:
+					user_key_day = user_key_day - 22
+				
+				key_list = cp.get_key_list(filep="ru_RU")
 
+				key_values = []
+				for i in key_list:
+					if f"code_{user_key_day}" in i[1]:
+						if "m" in i[1] or "w" in i[1]:
+							user_obj = await db.find_q("users", {"telegram_id":callback_query.from_user.id})
+							if user_obj["gender"][0] == i[1][-1]:
+								key_values.append(i[1])
+						else:
+							key_values.append(i[1])
+								
+				for i in key_values:
+					await callback_query.message.answer(cp.get_value(i, filep="ru_RU"))
+
+				await callback_query.message.answer(cp.get_value("welcome_text", filep=cp.get_value("L_CODE")), reply_markup=await Keyboards.mainmenu_board())
+			else:
+				data["day_new"] = ""
+				feature = callback_query.data.split("_")[-1]
+				data["feature"] = feature
+				await callback_query.message.answer(cp.get_value("pls_select_date", filep=cp.get_value("L_CODE")), reply_markup=await DialogCalendar().start_calendar())
+				
 		elif callback_query.data[0:5] == "year_":
 			await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
 			if callback_query.data.split("_")[1] == "old":
