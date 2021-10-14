@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_required, login_user, log
 import api.config_api as cp
 
 user_name = "root"
-pass_word = "toor"
+pass_word = "TKRNtO58I8"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super-secret'
@@ -74,4 +74,4 @@ def page_not_found(e):
     return render_template('404.html'), 404 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=80)
